@@ -34,7 +34,7 @@ enum class DumpType_t : uint32_t {
   MiniDump = 0x4,                // Produced by `.dump /m`
   KernelMemoryDump = 0x8,        // Produced by `.dump /k`
   KernelAndUserMemoryDump = 0x9, // Produced by `.dump /ka`
-  FullMemoryDump = 0xa,          // Produced by `.dump /f`
+  CompleteMemoryDump = 0xa,      // Produced by `.dump /f`
 };
 
 //
@@ -93,8 +93,8 @@ const std::string_view DumpTypeToString(DumpType_t type) {
     return "KernelMemoryDump"sv;
   case DumpType_t::KernelAndUserMemoryDump:
     return "KernelAndUserMemoryDump"sv;
-  case DumpType_t::FullMemoryDump:
-    return "FullMemoryDump"sv;
+  case DumpType_t::CompleteMemoryDump:
+    return "CompleteMemoryDump"sv;
   }
   return "Unknown"sv;
 }
@@ -761,7 +761,7 @@ struct HEADER64 {
       break;
     }
 
-    case DumpType_t::FullMemoryDump: {
+    case DumpType_t::CompleteMemoryDump: {
       if (!u3.FullRdmpHeader.LooksGood()) {
         printf("The RdmpHeader looks wrong.\n");
         return false;

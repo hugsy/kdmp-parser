@@ -101,18 +101,11 @@ public:
       break;
     }
 
+    case DumpType_t::CompleteMemoryDump:
     case DumpType_t::KernelAndUserMemoryDump:
     case DumpType_t::KernelMemoryDump: {
-      if (!BuildPhysicalMemoryFromKernelOnlyDump()) {
-        printf("BuildPhysicalMemoryFromKernelOnlyDump failed.\n");
-        return false;
-      }
-      break;
-    }
-
-    case DumpType_t::FullMemoryDump: {
-      if (!BuildPhysicalMemoryFromFullMemoryDump()) {
-        printf("BuildPhysicalMemoryFromKernelOnlyDump failed.\n");
+      if (!BuildPhysicalMemoryFromDump(DmpHdr_->DumpType)) {
+        printf("BuildPhysicalMemoryFromDump failed.\n");
         return false;
       }
       break;
@@ -563,14 +556,37 @@ private:
   }
 
   ///
-  /// @brief
+  /// @brief Populate the physical memory map using one of the new supported
+  /// dump type
   ///
+  /// @param Type must be `KernelMemoryDump`, `KernelAndUserMemoryDump`,
+  /// `CompleteMemoryDump`
   ///
-  bool BuildPhysicalMemoryFromKernelOnlyDump() {
-    const uint8_t *Page =
-        (uint8_t *)DmpHdr_ + DmpHdr_->u3.RdmpHeader.FirstPageOffset;
-    const uint64_t MetadataSize = DmpHdr_->u3.RdmpHeader.MetadataSize;
-    const uint8_t *Bitmap = DmpHdr_->u3.RdmpHeader.Bitmap.data();
+  bool BuildPhysicalMemoryFromDump(DumpType_t Type) {
+
+    uint8_t *Page = nullptr;
+    uint64_t MetadataSize = 0;
+    uint8_t *Bitmap = nullptr;
+
+    switch (Type) {
+    case DumpType_t::KernelMemoryDump:
+    case DumpType_t::KernelAndUserMemoryDump:
+      Page = (uint8_t *)DmpHdr_ + DmpHdr_->u3.RdmpHeader.FirstPageOffset;
+      MetadataSize = DmpHdr_->u3.RdmpHeader.MetadataSize;
+      Bitmap = DmpHdr_->u3.RdmpHeader.Bitmap.data();
+      break;
+
+    case DumpType_t::CompleteMemoryDump:
+      MetadataSize = DmpHdr_->u3.FullRdmpHeader.MetadataSize;
+      Page = (uint8_t *)DmpHdr_ + DmpHdr_->u3.FullRdmpHeader.FirstPageOffset;
+      Bitmap = DmpHdr_->u3.FullRdmpHeader.Bitmap.data();
+      break;
+    }
+
+    if (!Page || !MetadataSize || !Bitmap)
+      return false;
+
+    // TODO add arithm checks
 
     struct PfnRange {
       uint64_t PageFileNumber;
@@ -582,46 +598,11 @@ private:
       const uint64_t Pfn = Entry.PageFileNumber;
       if (!Pfn)
         break;
+
       // TODO add boundary checks
 
       for (uint64_t j = 0; j < Entry.NumberOfPages; j++) {
         const uint64_t Pa = Pfn * Page::Size + j * Page::Size;
-        Physmem_.try_emplace(Pa, Page);
-        Page += Page::Size;
-      }
-    }
-
-    return true;
-  }
-
-  ///
-  ///@brief
-  ///
-  ///
-  bool BuildPhysicalMemoryFromFullMemoryDump() {
-    const uint32_t NumberOfRanges = DmpHdr_->u3.FullRdmpHeader.NumberOfRanges;
-    const uint8_t *Page =
-        (uint8_t *)DmpHdr_ + DmpHdr_->u3.FullRdmpHeader.FirstPageOffset;
-    const uint8_t *Bitmap = DmpHdr_->u3.FullRdmpHeader.Bitmap.data();
-
-    //
-    // In Complete Memory Dump, the metadata holds an array of PFN ranges
-    // Within each range, pages are contiguous.
-    //
-    struct PfnRange {
-      uint64_t Start;
-      uint64_t NumberOfPages;
-    };
-
-    const PfnRange *PfnRanges = (PfnRange *)Bitmap;
-
-    for (uint32_t i = 0; i < NumberOfRanges; i++) {
-      // TODO add boundary checks
-      const PfnRange &CurrentRange = (PfnRange &)PfnRanges[i];
-      const uint64_t end = CurrentRange.Start + CurrentRange.NumberOfPages;
-
-      for (uint64_t Pfn = CurrentRange.Start; Pfn < end; Pfn++) {
-        const uint64_t Pa = Pfn * Page::Size;
         Physmem_.try_emplace(Pa, Page);
         Page += Page::Size;
       }

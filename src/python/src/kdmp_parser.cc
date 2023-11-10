@@ -44,7 +44,7 @@ NB_MODULE(_kdmp_parser, m) {
       .value("KernelMemoryDump", kdmpparser::DumpType_t::KernelMemoryDump)
       .value("KernelAndUserMemoryDump",
              kdmpparser::DumpType_t::KernelAndUserMemoryDump)
-      .value("FullMemoryDump", kdmpparser::DumpType_t::FullMemoryDump)
+      .value("CompleteMemoryDump", kdmpparser::DumpType_t::CompleteMemoryDump)
       .export_values();
 
   nb::class_<kdmpparser::PHYSMEM_RUN>(m, "PHYSMEM_RUN")
