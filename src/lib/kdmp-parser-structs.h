@@ -322,10 +322,9 @@ static_assert(offsetof(KERNEL_RDMP_HEADER64, Bitmap) == 0x30,
               "Invalid offset for KERNEL_RDMP_HEADER64");
 
 struct FULL_RDMP_HEADER64 : RDMP_HEADER64 {
-
   uint32_t NumberOfRanges;
-  uint16_t __dunno1;
-  uint16_t __dunno2;
+  uint16_t __Unknown1;
+  uint16_t __Unknown2;
   uint64_t TotalNumberOfPages;
   std::array<uint8_t, 1> Bitmap;
 };

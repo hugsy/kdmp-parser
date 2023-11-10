@@ -562,6 +562,8 @@ private:
   /// @param Type must be `KernelMemoryDump`, `KernelAndUserMemoryDump`,
   /// `CompleteMemoryDump`
   ///
+  /// @return true on success, false otherwise
+  ///
   bool BuildPhysicalMemoryFromDump(DumpType_t Type) {
 
     uint8_t *Page = nullptr;
@@ -577,8 +579,8 @@ private:
       break;
 
     case DumpType_t::CompleteMemoryDump:
-      MetadataSize = DmpHdr_->u3.FullRdmpHeader.MetadataSize;
       Page = (uint8_t *)DmpHdr_ + DmpHdr_->u3.FullRdmpHeader.FirstPageOffset;
+      MetadataSize = DmpHdr_->u3.FullRdmpHeader.MetadataSize;
       Bitmap = DmpHdr_->u3.FullRdmpHeader.Bitmap.data();
       break;
     }
