@@ -310,17 +310,31 @@ struct RDMP_HEADER64 {
 static_assert(sizeof(RDMP_HEADER64) == 0x20, "Invalid size for RDMP_HEADERS64");
 
 struct KERNEL_RDMP_HEADER64 : RDMP_HEADER64 {
-
   uint64_t __Unknown1;
   uint64_t __Unknown2;
   std::array<uint8_t, 1> Bitmap;
 };
 
-static_assert(sizeof(KERNEL_RDMP_HEADER64) == 0x31,
+static_assert(sizeof(KERNEL_RDMP_HEADER64) == 0x30 + 1,
               "Invalid size for KERNEL_RDMP_HEADER64");
 
 static_assert(offsetof(KERNEL_RDMP_HEADER64, Bitmap) == 0x30,
               "Invalid offset for KERNEL_RDMP_HEADER64");
+
+struct FULL_RDMP_HEADER64 : RDMP_HEADER64 {
+
+  uint32_t NumberOfRanges;
+  uint16_t __dunno1;
+  uint16_t __dunno2;
+  uint64_t TotalNumberOfPages;
+  std::array<uint8_t, 1> Bitmap;
+};
+
+static_assert(sizeof(FULL_RDMP_HEADER64) == 0x30 + 1,
+              "Invalid size for FULL_RDMP_HEADER64");
+
+static_assert(offsetof(FULL_RDMP_HEADER64, Bitmap) == 0x30,
+              "Invalid offset for FULL_RDMP_HEADER64");
 
 struct CONTEXT {
 
@@ -698,6 +712,7 @@ struct HEADER64 {
   union {
     BMP_HEADER64 BmpHeader;
     KERNEL_RDMP_HEADER64 RdmpHeader;
+    FULL_RDMP_HEADER64 FullRdmpHeader;
   } u3;
 
   bool LooksGood() const {
@@ -746,7 +761,14 @@ struct HEADER64 {
       break;
     }
 
-    case DumpType_t::FullMemoryDump:
+    case DumpType_t::FullMemoryDump: {
+      if (!u3.FullRdmpHeader.LooksGood()) {
+        printf("The RdmpHeader looks wrong.\n");
+        return false;
+      }
+      break;
+    }
+
     case DumpType_t::MiniDump:
       printf("Unsupported type %s (%#x).\n", DumpTypeToString(DumpType).data(),
              static_cast<uint32_t>(DumpType));
