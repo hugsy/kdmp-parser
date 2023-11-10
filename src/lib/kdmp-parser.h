@@ -397,11 +397,10 @@ public:
     return GetPhysicalPage(*PhysicalAddress);
   }
 
-  const HEADER64 &GetDumpHeader() const {
-    // Note: this is a bit of a hack for nanobind object manager but it should
-    // be ok since DmpHdr_ lifespan is the same as that of the KernelDumpParser
-    // object
-    return (HEADER64 &)DmpHdr_;
+  const HEADER64 *GetDumpHeader() const {
+    if (!DmpHdr_)
+      throw std::runtime_error("DmpHdr_ should never be null here");
+    return DmpHdr_;
   }
 
 private:

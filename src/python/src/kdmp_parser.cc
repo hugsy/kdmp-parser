@@ -262,7 +262,8 @@ NB_MODULE(_kdmp_parser, m) {
       .def(nb::init<>())
       .def("Parse", &kdmpparser::KernelDumpParser::Parse, "PathFile"_a)
       .def("GetContext", &kdmpparser::KernelDumpParser::GetContext)
-      .def("GetDumpHeader", &kdmpparser::KernelDumpParser::GetDumpHeader)
+      .def("GetDumpHeader", &kdmpparser::KernelDumpParser::GetDumpHeader,
+           nb::rv_policy::reference)
       .def("GetBugCheckParameters",
            &kdmpparser::KernelDumpParser::GetBugCheckParameters)
       .def("GetDumpType", &kdmpparser::KernelDumpParser::GetDumpType)
