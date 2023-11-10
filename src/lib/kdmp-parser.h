@@ -397,6 +397,13 @@ public:
     return GetPhysicalPage(*PhysicalAddress);
   }
 
+  const HEADER64 &GetDumpHeader() const {
+    // Note: this is a bit of a hack for nanobind object manager but it should
+    // be ok since DmpHdr_ lifespan is the same as that of the KernelDumpParser
+    // object
+    return (HEADER64 &)DmpHdr_;
+  }
+
 private:
   //
   // Utility function to read an uint64_t from a physical address.
@@ -570,7 +577,7 @@ private:
     uint64_t MetadataSize = 0;
     uint8_t *Bitmap = nullptr;
 
-    const uint64_t FileSize = FileMap_.FileSize();
+    const uint64_t FileSize = FileMap_.FileSize().QuadPart;
     const uint64_t MaxAddress = ((uint64_t)DmpHdr_) + FileSize;
 
     switch (Type) {

@@ -183,7 +183,6 @@ NB_MODULE(_kdmp_parser, m) {
                      &kdmpparser::HEADER64::ExpectedSignature)
       .def_ro_static("ExpectedValidDump",
                      &kdmpparser::HEADER64::ExpectedValidDump)
-
       .def_ro("Signature", &kdmpparser::HEADER64::Signature)
       .def_ro("ValidDump", &kdmpparser::HEADER64::ValidDump)
       .def_ro("MajorVersion", &kdmpparser::HEADER64::MajorVersion)
@@ -221,12 +220,28 @@ NB_MODULE(_kdmp_parser, m) {
       .def_ro("Attributes", &kdmpparser::HEADER64::Attributes)
       .def_ro("BootId", &kdmpparser::HEADER64::BootId)
 
-      .def_prop_ro(
-          "BmpHeader",
-          [](kdmpparser::HEADER64 const &hdr) { return hdr.u3.BmpHeader; })
-      .def_prop_ro(
-          "RdmpHeader",
-          [](kdmpparser::HEADER64 const &hdr) { return hdr.u3.RdmpHeader; })
+      .def_prop_ro("BmpHeader",
+                   [](kdmpparser::HEADER64 const &hdr) {
+                     if (hdr.DumpType != kdmpparser::DumpType_t::BMPDump)
+                       throw std::runtime_error("Invalid type");
+                     return hdr.u3.BmpHeader;
+                   })
+      .def_prop_ro("RdmpHeader",
+                   [](kdmpparser::HEADER64 const &hdr) {
+                     if (hdr.DumpType !=
+                             kdmpparser::DumpType_t::KernelAndUserMemoryDump &&
+                         hdr.DumpType !=
+                             kdmpparser::DumpType_t::KernelMemoryDump)
+                       throw std::runtime_error("Invalid type");
+                     return hdr.u3.RdmpHeader;
+                   })
+      .def_prop_ro("FullRdmpHeader",
+                   [](kdmpparser::HEADER64 const &hdr) {
+                     if (hdr.DumpType !=
+                         kdmpparser::DumpType_t::CompleteMemoryDump)
+                       throw std::runtime_error("Invalid type");
+                     return hdr.u3.FullRdmpHeader;
+                   })
 
       .def("Show", &kdmpparser::CONTEXT::Show, "Prefix"_a)
       .def("LooksGood", &kdmpparser::CONTEXT::LooksGood);
@@ -247,6 +262,7 @@ NB_MODULE(_kdmp_parser, m) {
       .def(nb::init<>())
       .def("Parse", &kdmpparser::KernelDumpParser::Parse, "PathFile"_a)
       .def("GetContext", &kdmpparser::KernelDumpParser::GetContext)
+      .def("GetDumpHeader", &kdmpparser::KernelDumpParser::GetDumpHeader)
       .def("GetBugCheckParameters",
            &kdmpparser::KernelDumpParser::GetBugCheckParameters)
       .def("GetDumpType", &kdmpparser::KernelDumpParser::GetDumpType)

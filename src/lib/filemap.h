@@ -64,6 +64,8 @@ public:
 
   constexpr void *ViewBase() const { return ViewBase_; }
 
+  LARGE_INTEGER const &FileSize() const { return FileSize_; }
+
   bool MapFile(const char *PathFile) {
     bool Success = true;
     HANDLE File = nullptr;
@@ -175,8 +177,6 @@ public:
 
     return Success;
   }
-
-  uint64_t FileSize() const { return FileSize_.QuadPart; }
 };
 
 #elif defined(LINUX)

@@ -59,6 +59,7 @@ class KernelDumpParser:
         self.context = self.__dump.GetContext()
         self.directory_table_base = self.__dump.GetDirectoryTableBase() & ~0xFFF
         self.type = DumpType(self.__dump.GetDumpType())
+        self.header = self.__dump.GetDumpHeader()
         return
 
     def __repr__(self) -> str:
