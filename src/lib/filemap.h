@@ -22,6 +22,12 @@ class FileMap_t {
 
   PVOID ViewBase_ = nullptr;
 
+  //
+  // File size
+  //
+
+  LARGE_INTEGER FileSize_{};
+
 public:
   ~FileMap_t() {
     //
@@ -126,6 +132,14 @@ public:
     }
 
     //
+    // Collect the file size
+    //
+    if (!::GetFileSizeEx(File, &FileSize_)) {
+      Success = false;
+      goto clean;
+    }
+
+    //
     // Everything went well, so grab a copy of the handles for
     // our class and null-out the temporary variables.
     //
@@ -161,6 +175,8 @@ public:
 
     return Success;
   }
+
+  uint64_t FileSize() const { return FileSize_.QuadPart; }
 };
 
 #elif defined(LINUX)

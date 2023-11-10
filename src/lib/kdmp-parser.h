@@ -565,30 +565,36 @@ private:
   /// @return true on success, false otherwise
   ///
   bool BuildPhysicalMemoryFromDump(DumpType_t Type) {
-
+    uint64_t FirstPageOffset = 0;
     uint8_t *Page = nullptr;
     uint64_t MetadataSize = 0;
     uint8_t *Bitmap = nullptr;
 
+    const uint64_t FileSize = FileMap_.FileSize();
+    const uint64_t MaxAddress = ((uint64_t)DmpHdr_) + FileSize;
+
     switch (Type) {
     case DumpType_t::KernelMemoryDump:
     case DumpType_t::KernelAndUserMemoryDump:
-      Page = (uint8_t *)DmpHdr_ + DmpHdr_->u3.RdmpHeader.FirstPageOffset;
+      FirstPageOffset = DmpHdr_->u3.RdmpHeader.FirstPageOffset;
+      Page = (uint8_t *)DmpHdr_ + FirstPageOffset;
       MetadataSize = DmpHdr_->u3.RdmpHeader.MetadataSize;
       Bitmap = DmpHdr_->u3.RdmpHeader.Bitmap.data();
       break;
 
     case DumpType_t::CompleteMemoryDump:
-      Page = (uint8_t *)DmpHdr_ + DmpHdr_->u3.FullRdmpHeader.FirstPageOffset;
+      FirstPageOffset = DmpHdr_->u3.RdmpHeader.FirstPageOffset;
+      Page = (uint8_t *)DmpHdr_ + FirstPageOffset;
       MetadataSize = DmpHdr_->u3.FullRdmpHeader.MetadataSize;
       Bitmap = DmpHdr_->u3.FullRdmpHeader.Bitmap.data();
       break;
     }
 
-    if (!Page || !MetadataSize || !Bitmap)
+    if (!FirstPageOffset || !Page || !MetadataSize || !Bitmap)
       return false;
 
-    // TODO add arithm checks
+    if ((uint64_t)Page >= MaxAddress)
+      return false;
 
     struct PfnRange {
       uint64_t PageFileNumber;
@@ -596,14 +602,17 @@ private:
     };
 
     for (uint64_t i = 0; i < MetadataSize; i += sizeof(PfnRange)) {
+      if (((uint64_t)Bitmap + i) > MaxAddress)
+        return false;
+
       const PfnRange &Entry = (PfnRange &)Bitmap[i];
       const uint64_t Pfn = Entry.PageFileNumber;
       if (!Pfn)
         break;
 
-      // TODO add boundary checks
-
       for (uint64_t j = 0; j < Entry.NumberOfPages; j++) {
+        if ((uint64_t)Page >= MaxAddress)
+          return false;
         const uint64_t Pa = Pfn * Page::Size + j * Page::Size;
         Physmem_.try_emplace(Pa, Page);
         Page += Page::Size;
