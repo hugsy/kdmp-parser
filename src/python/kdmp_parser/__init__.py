@@ -18,9 +18,9 @@ from ._kdmp_parser import (  # type: ignore
     # PHYSMEM_RUN,
     # PHYSMEM_DESC,
     # BMP_HEADER64,
-    # CONTEXT,
+    CONTEXT as __CONTEXT,
     # EXCEPTION_RECORD64,
-    # HEADER64,
+    HEADER64 as __HEADER64,
     # BugCheckParameters_t,
 )
 
@@ -56,10 +56,10 @@ class KernelDumpParser:
             raise RuntimeError(f"Invalid kernel dump file: {path}")
 
         self.filepath = path
-        self.context = self.__dump.GetContext()
-        self.directory_table_base = self.__dump.GetDirectoryTableBase() & ~0xFFF
+        self.context: __CONTEXT = self.__dump.GetContext()
+        self.directory_table_base: int = self.__dump.GetDirectoryTableBase() & ~0xFFF
         self.type = DumpType(self.__dump.GetDumpType())
-        self.header = self.__dump.GetDumpHeader()
+        self.header: __HEADER64 = self.__dump.GetDumpHeader()
         return
 
     def __repr__(self) -> str:

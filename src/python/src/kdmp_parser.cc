@@ -80,6 +80,28 @@ NB_MODULE(_kdmp_parser, m) {
       .def("Show", &kdmpparser::PHYSMEM_DESC::Show, "Prefix"_a)
       .def("LooksGood", &kdmpparser::PHYSMEM_DESC::LooksGood);
 
+  nb::class_<kdmpparser::RDMP_HEADER64>(m, "RDMP_HEADER64")
+      .def(nb::init<>())
+      .def_ro_static("ExpectedMarker",
+                     &kdmpparser::RDMP_HEADER64::ExpectedMarker)
+      .def_ro_static("ExpectedSignature",
+                     &kdmpparser::RDMP_HEADER64::ExpectedSignature)
+      .def_ro_static("ExpectedValidDump",
+                     &kdmpparser::RDMP_HEADER64::ExpectedValidDump)
+      .def_ro("Marker", &kdmpparser::RDMP_HEADER64::Marker)
+      .def_ro("Signature", &kdmpparser::RDMP_HEADER64::Signature)
+      .def_ro("ValidDump", &kdmpparser::RDMP_HEADER64::ValidDump)
+      .def_ro("MetadataSize", &kdmpparser::RDMP_HEADER64::MetadataSize)
+      .def_ro("FirstPageOffset", &kdmpparser::RDMP_HEADER64::FirstPageOffset)
+      .def("LooksGood", &kdmpparser::RDMP_HEADER64::LooksGood)
+      .def("Show", &kdmpparser::RDMP_HEADER64::Show);
+
+  nb::class_<kdmpparser::KERNEL_RDMP_HEADER64>(m, "KERNEL_RDMP_HEADER64")
+      .def(nb::init<>());
+
+  nb::class_<kdmpparser::FULL_RDMP_HEADER64>(m, "FULL_RDMP_HEADER64")
+      .def(nb::init<>());
+
   nb::class_<kdmpparser::CONTEXT>(m, "CONTEXT")
       .def(nb::init<>())
       .def_ro("P1Home", &kdmpparser::CONTEXT::P1Home)
