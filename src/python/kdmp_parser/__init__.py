@@ -24,6 +24,10 @@ from ._kdmp_parser import (  # type: ignore
     # BugCheckParameters_t,
 )
 
+from .page import (
+    PageIterator as _PageIterator,
+)
+
 
 class DumpType(enum.IntEnum):
     FullDump = _DumpType_t.FullDump
@@ -60,6 +64,7 @@ class KernelDumpParser:
         self.directory_table_base: int = self.__dump.GetDirectoryTableBase() & ~0xFFF
         self.type = DumpType(self.__dump.GetDumpType())
         self.header: __HEADER64 = self.__dump.GetDumpHeader()
+        self.pages = _PageIterator(self.__dump)
         return
 
     def __repr__(self) -> str:
