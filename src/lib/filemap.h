@@ -1,5 +1,6 @@
 // Axel '0vercl0k' Souchet - April 28 2020
 #include "platform.h"
+#include <cstdint>
 #include <cstdio>
 
 #if defined(WINDOWS)
@@ -177,6 +178,8 @@ public:
 
     return Success;
   }
+
+  uint64_t ViewSize() const { return FileSize_.QuadPart; }
 };
 
 #elif defined(LINUX)
@@ -235,6 +238,8 @@ public:
 
     return true;
   }
+
+  uint64_t ViewSize() const { return ViewSize_; }
 };
 
 #endif

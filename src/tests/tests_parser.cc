@@ -1,47 +1,38 @@
-// Axel '0vercl0k' Souchet - 2019-2023
+// Axel '0vercl0k' Souchet - 2023
 #define CATCH_CONFIG_MAIN
-
-#include "catch.hpp"
 
 #include "kdmp-parser.h"
 #include <array>
+#include <catch2/catch_test_macros.hpp>
 #include <cstring>
 #include <filesystem>
 
-//
-// TEST_DATA_DIR must be defined to a string which corresponds to a path to the
-// dump files
-//
-#ifndef TEST_DATA_DIR
-#error Missing dump folder
-#endif
-
-const static std::filesystem::path g_TestDataDir(TEST_DATA_DIR);
-const static std::array<std::filesystem::path, 2> g_TestDataFiles = {{
-    g_TestDataDir / "full.dmp",
-    g_TestDataDir / "bmp.dmp",
-}};
+const std::array g_TestDataFiles{
+    "full.dmp",
+    "bmp.dmp",
+};
 
 TEST_CASE("kdmp-parser", "parser") {
   SECTION("Test minidump exists") {
-    for (auto const &file : g_TestDataFiles) {
-      CHECK(std::filesystem::exists(file));
+    for (const auto &File : g_TestDataFiles) {
+      REQUIRE(std::filesystem::exists(File));
     }
   }
 
   SECTION("Basic parsing") {
-    for (auto const &file : g_TestDataFiles) {
-      kdmpparser::KernelDumpParser Dmp{};
-      CHECK(Dmp.Parse(file.string().c_str()));
+    for (const auto &File : g_TestDataFiles) {
+      kdmpparser::KernelDumpParser Dmp;
+      REQUIRE(Dmp.Parse(File));
 
-      const kdmpparser::DumpType_t Type = Dmp.GetDumpType();
+      const auto Type = Dmp.GetDumpType();
       const auto &Physmem = Dmp.GetPhysmem();
-      if (file.filename() == "bmp.dmp") {
+      const auto &Path = Dmp.GetDumpPath();
+      if (Path.filename() == "bmp.dmp") {
         CHECK(Type == kdmpparser::DumpType_t::BMPDump);
-        CHECK(Physmem.size() == 0x544b);
-      } else if (file.filename() == "full.dmp") {
+        CHECK(Physmem.size() == 0x54'4b);
+      } else if (Path.filename() == "full.dmp") {
         CHECK(Type == kdmpparser::DumpType_t::FullDump);
-        CHECK(Physmem.size() == 0x3fbe6);
+        CHECK(Physmem.size() == 0x03'fb'e6);
       } else {
         CHECK(false);
       }
@@ -61,44 +52,44 @@ TEST_CASE("kdmp-parser", "parser") {
   //
 
   SECTION("Context values") {
-    for (auto const &file : g_TestDataFiles) {
-      kdmpparser::KernelDumpParser Dmp{};
-      CHECK(Dmp.Parse(file.string().c_str()));
-      const auto Context = Dmp.GetContext();
-      CHECK(Context.Rax == 0x0000000000000003ULL);
-      CHECK(Context.Rbx == 0xfffff8050f4e9f70ULL);
-      CHECK(Context.Rcx == 0x0000000000000001ULL);
-      CHECK(Context.Rdx == 0xfffff805135684d0ULL);
-      CHECK(Context.Rsi == 0x0000000000000100ULL);
-      CHECK(Context.Rdi == 0xfffff8050f4e9f80ULL);
-      CHECK(Context.Rip == 0xfffff805108776a0ULL);
-      CHECK(Context.Rsp == 0xfffff805135684f8ULL);
-      CHECK(Context.Rbp == 0xfffff80513568600ULL);
-      CHECK(Context.R8 == 0x0000000000000003ULL);
-      CHECK(Context.R9 == 0xfffff805135684b8ULL);
-      CHECK(Context.R10 == 0x0000000000000000ULL);
-      CHECK(Context.R11 == 0xffffa8848825e000ULL);
-      CHECK(Context.R12 == 0xfffff8050f4e9f80ULL);
-      CHECK(Context.R13 == 0xfffff80510c3c958ULL);
-      CHECK(Context.R14 == 0x0000000000000000ULL);
-      CHECK(Context.R15 == 0x0000000000000052ULL);
+    for (const auto &File : g_TestDataFiles) {
+      kdmpparser::KernelDumpParser Dmp;
+      REQUIRE(Dmp.Parse(File));
+      const auto &Context = Dmp.GetContext();
+      CHECK(Context.Rax == 0x00000000'00000003ULL);
+      CHECK(Context.Rbx == 0xfffff805'0f4e9f70ULL);
+      CHECK(Context.Rcx == 0x00000000'00000001ULL);
+      CHECK(Context.Rdx == 0xfffff805'135684d0ULL);
+      CHECK(Context.Rsi == 0x00000000'00000100ULL);
+      CHECK(Context.Rdi == 0xfffff805'0f4e9f80ULL);
+      CHECK(Context.Rip == 0xfffff805'108776a0ULL);
+      CHECK(Context.Rsp == 0xfffff805'135684f8ULL);
+      CHECK(Context.Rbp == 0xfffff805'13568600ULL);
+      CHECK(Context.R8 == 0x00000000'00000003ULL);
+      CHECK(Context.R9 == 0xfffff805'135684b8ULL);
+      CHECK(Context.R10 == 0x00000000'00000000ULL);
+      CHECK(Context.R11 == 0xffffa884'8825e000ULL);
+      CHECK(Context.R12 == 0xfffff805'0f4e9f80ULL);
+      CHECK(Context.R13 == 0xfffff805'10c3c958ULL);
+      CHECK(Context.R14 == 0x00000000'00000000ULL);
+      CHECK(Context.R15 == 0x00000000'00000052ULL);
     }
   }
 
   SECTION("Memory access") {
-    for (auto const &file : g_TestDataFiles) {
-      kdmpparser::KernelDumpParser Dmp{};
-      CHECK(Dmp.Parse(file.string().c_str()));
-      const uint64_t Address = 0x6d4d22;
-      const uint64_t AddressAligned = Address & 0xfffffffffffff000;
+    for (const auto &File : g_TestDataFiles) {
+      kdmpparser::KernelDumpParser Dmp;
+      REQUIRE(Dmp.Parse(File));
+      const uint64_t Address = 0x6d'4d'22;
+      const uint64_t AddressAligned = Address & 0xffffffff'fffff000;
       const uint64_t AddressOffset = Address & 0xfff;
       const uint8_t ExpectedContent[] = {0x6d, 0x00, 0x00, 0x00, 0x00, 0x0a,
                                          0x63, 0x88, 0x75, 0x00, 0x00, 0x00,
                                          0x00, 0x0a, 0x63, 0x98};
       const uint8_t *Page = Dmp.GetPhysicalPage(AddressAligned);
       CHECK(Page != nullptr);
-      CHECK(::memcmp(Page + AddressOffset, ExpectedContent,
-                     sizeof(ExpectedContent)) == 0);
+      CHECK(memcmp(Page + AddressOffset, ExpectedContent,
+                   sizeof(ExpectedContent)) == 0);
     }
   }
 }

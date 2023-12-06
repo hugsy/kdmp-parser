@@ -96,7 +96,7 @@ const std::string_view DumpTypeToString(DumpType_t type) {
   case DumpType_t::CompleteMemoryDump:
     return "CompleteMemoryDump"sv;
   }
-  return "Unknown"sv;
+  return ""sv;
 }
 
 template <typename Field_t>
@@ -187,9 +187,9 @@ static_assert(sizeof(PHYSMEM_DESC) == 0x20,
               "PHYSICAL_MEMORY_DESCRIPTOR's size looks wrong.");
 
 struct BMP_HEADER64 {
-  static constexpr uint32_t ExpectedSignature = 0x504D4453;  // 'PMDS'
-  static constexpr uint32_t ExpectedSignature2 = 0x504D4446; // 'PMDF'
-  static constexpr uint32_t ExpectedValidDump = 0x504D5544;  // 'PMUD'
+  static const inline uint32_t ExpectedSignature = 0x504D4453;  // 'PMDS'
+  static const inline uint32_t ExpectedSignature2 = 0x504D4446; // 'PMDF'
+  static const inline uint32_t ExpectedValidDump = 0x504D5544;  // 'PMUD'
 
   //
   // Should be FDMP.
@@ -234,7 +234,7 @@ struct BMP_HEADER64 {
 
   uint64_t Pages;
 
-  std::array<uint8_t, 1> Bitmap; // TODO fix
+  std::array<uint8_t, 1> Bitmap;
 
   bool LooksGood() const {
 
@@ -270,9 +270,9 @@ static_assert(offsetof(BMP_HEADER64, FirstPage) == 0x20,
               "First page offset looks wrong.");
 
 struct RDMP_HEADER64 {
-  static constexpr uint32_t ExpectedMarker = 0x40;
-  static constexpr uint32_t ExpectedSignature = 0x504d4452; // 'PMDR'
-  static constexpr uint32_t ExpectedValidDump = 0x504D5544; // 'PMUD'
+  static const inline uint32_t ExpectedMarker = 0x40;
+  static const inline uint32_t ExpectedSignature = 0x504d4452; // 'PMDR'
+  static const inline uint32_t ExpectedValidDump = 0x504D5544; // 'PMUD'
 
   uint32_t Marker;
   uint32_t Signature;
@@ -309,17 +309,25 @@ struct RDMP_HEADER64 {
 
 static_assert(sizeof(RDMP_HEADER64) == 0x20, "Invalid size for RDMP_HEADERS64");
 
-struct KERNEL_RDMP_HEADER64 : RDMP_HEADER64 {
+struct KERNEL_RDMP_HEADER64 : public RDMP_HEADER64 {
   uint64_t __Unknown1;
   uint64_t __Unknown2;
   std::array<uint8_t, 1> Bitmap;
 };
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#endif //__GNUC__
 
 static_assert(sizeof(KERNEL_RDMP_HEADER64) == 0x30 + 1,
               "Invalid size for KERNEL_RDMP_HEADER64");
 
 static_assert(offsetof(KERNEL_RDMP_HEADER64, Bitmap) == 0x30,
               "Invalid offset for KERNEL_RDMP_HEADER64");
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif //__GNUC__
 
 struct FULL_RDMP_HEADER64 : RDMP_HEADER64 {
   uint32_t NumberOfRanges;
@@ -329,11 +337,18 @@ struct FULL_RDMP_HEADER64 : RDMP_HEADER64 {
   std::array<uint8_t, 1> Bitmap;
 };
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#endif //__GNUC__
 static_assert(sizeof(FULL_RDMP_HEADER64) == 0x30 + 1,
               "Invalid size for FULL_RDMP_HEADER64");
 
 static_assert(offsetof(FULL_RDMP_HEADER64, Bitmap) == 0x30,
               "Invalid offset for FULL_RDMP_HEADER64");
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif //__GNUC__
 
 struct CONTEXT {
 
@@ -662,8 +677,8 @@ union DUMP_FILE_ATTRIBUTES {
 ///
 ///
 struct HEADER64 {
-  static const uint32_t ExpectedSignature = 0x45474150; // 'EGAP'
-  static const uint32_t ExpectedValidDump = 0x34365544; // '46UD'
+  static const inline uint32_t ExpectedSignature = 0x45474150; // 'EGAP'
+  static const inline uint32_t ExpectedValidDump = 0x34365544; // '46UD'
 
   /* 0x0000 */ uint32_t Signature;
   /* 0x0004 */ uint32_t ValidDump;
@@ -774,7 +789,7 @@ struct HEADER64 {
       return false;
 
     default:
-      printf("Unknown Type %#x.\n", static_cast<uint32_t>(DumpType));
+      printf("Unknown Type %#x.\n", uint32_t(DumpType));
       return false;
     }
 
@@ -846,6 +861,10 @@ struct HEADER64 {
 // layout, so hopefully they prevent any regressions regarding the layout.
 //
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#endif //__GNUC__
 static_assert(offsetof(HEADER64, Signature) == 0x00,
               "The offset of KdDebuggerDataBlock looks wrong.");
 
@@ -866,6 +885,9 @@ static_assert(offsetof(HEADER64, Comment) == 0xfb0,
 
 static_assert(offsetof(HEADER64, u3.BmpHeader) == 0x2000,
               "The offset of BmpHeaders looks wrong.");
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif //__GNUC__
 
 namespace Page {
 

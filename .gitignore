@@ -57,8 +57,11 @@ wheel/
 __pycache__/
 .pytest_cache/
 
-# LFS test folder
-kdmp-parser-testdatas/
+# Test dumps
+*.dmp
 
 # Version files
 src/lib/kdmp-parser-version.h
+
+kdmp-parser-testdatas
+
