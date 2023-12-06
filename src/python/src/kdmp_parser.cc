@@ -1,7 +1,7 @@
 //
 // This file is part of kdmp-parser project
 //
-// Released under MIT License, by 0vercl0k - 2020-2023
+// Released under MIT License, by 0vercl0k - 2023
 //
 // With contributions from:
 //  * hugsy - (github.com/hugsy)
@@ -11,11 +11,15 @@
 
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/array.h>
+#include <nanobind/stl/bind_map.h>
 #include <nanobind/stl/filesystem.h>
 #include <nanobind/stl/optional.h>
+#include <nanobind/stl/pair.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/unordered_map.h>
 #include <nanobind/stl/variant.h>
+#include <vector>
+
 
 namespace nb = nanobind;
 using namespace nb::literals;
@@ -24,11 +28,11 @@ NB_MODULE(_kdmp_parser, m) {
 
   m.doc() = "KDMP parser module";
 
-  nb::class_<kdmpparser::Version>(m, "version")
-      .def_ro_static("major", &kdmpparser::Version::Major)
-      .def_ro_static("minor", &kdmpparser::Version::Minor)
-      .def_ro_static("patch", &kdmpparser::Version::Patch)
-      .def_ro_static("release", &kdmpparser::Version::Release);
+  nb::class_<kdmpparser::Version_t>(m, "version")
+      .def_ro_static("major", &kdmpparser::Version_t::Major)
+      .def_ro_static("minor", &kdmpparser::Version_t::Minor)
+      .def_ro_static("patch", &kdmpparser::Version_t::Patch)
+      .def_ro_static("release", &kdmpparser::Version_t::Release);
 
   nb::class_<kdmpparser::uint128_t>(m, "uint128_t")
       .def(nb::init<>())
@@ -240,7 +244,7 @@ NB_MODULE(_kdmp_parser, m) {
   nb::class_<kdmpparser::BugCheckParameters_t>(m, "BugCheckParameters_t")
       .def(nb::init<>())
       .def_ro("BugCheckCode", &kdmpparser::BugCheckParameters_t::BugCheckCode)
-      .def_ro("BugCheckCodeParameter;",
+      .def_ro("BugCheckCodeParameter",
               &kdmpparser::BugCheckParameters_t::BugCheckCodeParameter);
 
   nb::class_<kdmpparser::KernelDumpParser>(m, "KernelDumpParser")
@@ -250,6 +254,13 @@ NB_MODULE(_kdmp_parser, m) {
       .def("GetBugCheckParameters",
            &kdmpparser::KernelDumpParser::GetBugCheckParameters)
       .def("GetDumpType", &kdmpparser::KernelDumpParser::GetDumpType)
+      .def("GetPhysmem",
+           [](const kdmpparser::KernelDumpParser &Parser) {
+             const auto &PhysMem = Parser.GetPhysmem();
+             return nb::make_key_iterator(nb::type<std::vector<uint64_t>>(),
+                                          "it", PhysMem.cbegin(),
+                                          PhysMem.cend());
+           })
       .def("ShowExceptionRecord",
            &kdmpparser::KernelDumpParser::ShowExceptionRecord, "Prefix"_a = 0)
       .def("ShowContextRecord",
@@ -258,14 +269,17 @@ NB_MODULE(_kdmp_parser, m) {
            &kdmpparser::KernelDumpParser::ShowAllStructures, "Prefix"_a = 0)
       .def(
           "GetPhysicalPage",
-          [](kdmpparser::KernelDumpParser const &x,
-             uint64_t PhysicalAddress) -> std::optional<kdmpparser::Page_t> {
-            auto ptr = x.GetPhysicalPage(PhysicalAddress);
-            if (!ptr)
+          [](const kdmpparser::KernelDumpParser &Parser,
+             const uint64_t PhysicalAddress)
+              -> std::optional<kdmpparser::Page_t> {
+            const auto *Page = Parser.GetPhysicalPage(PhysicalAddress);
+            if (!Page) {
               return std::nullopt;
-            kdmpparser::Page_t out{};
-            ::memcpy(out.data(), ptr, kdmpparser::Page::Size);
-            return out;
+            }
+
+            kdmpparser::Page_t Out;
+            memcpy(Out.data(), Page, kdmpparser::Page::Size);
+            return Out;
           },
           "PhysicalAddress"_a)
       .def("GetDirectoryTableBase",
@@ -274,15 +288,19 @@ NB_MODULE(_kdmp_parser, m) {
            "VirtualAddress"_a, "DirectoryTableBase"_a)
       .def(
           "GetVirtualPage",
-          [](kdmpparser::KernelDumpParser const &x, uint64_t VirtualAddress,
-             uint64_t DirectoryTableBase =
+          [](const kdmpparser::KernelDumpParser &Parser,
+             const uint64_t VirtualAddress,
+             const uint64_t DirectoryTableBase =
                  0) -> std::optional<kdmpparser::Page_t> {
-            auto ptr = x.GetVirtualPage(VirtualAddress, DirectoryTableBase);
-            if (!ptr)
+            const auto *Page =
+                Parser.GetVirtualPage(VirtualAddress, DirectoryTableBase);
+            if (!Page) {
               return std::nullopt;
-            kdmpparser::Page_t out;
-            ::memcpy(out.data(), ptr, kdmpparser::Page::Size);
-            return out;
+            }
+
+            kdmpparser::Page_t Out;
+            memcpy(Out.data(), Page, kdmpparser::Page::Size);
+            return Out;
           },
           "VirtualAddress"_a, "DirectoryTableBase"_a = 0);
 }

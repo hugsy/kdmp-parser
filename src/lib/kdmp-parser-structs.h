@@ -96,7 +96,6 @@ const std::string_view DumpTypeToString(DumpType_t type) {
   case DumpType_t::CompleteMemoryDump:
     return "CompleteMemoryDump"sv;
   }
-  return "Unknown"sv;
 }
 
 template <typename Field_t>
@@ -234,7 +233,7 @@ struct BMP_HEADER64 {
 
   uint64_t Pages;
 
-  std::array<uint8_t, 1> Bitmap; // TODO fix
+  std::array<uint8_t, 1> Bitmap;
 
   bool LooksGood() const {
 
@@ -774,7 +773,7 @@ struct HEADER64 {
       return false;
 
     default:
-      printf("Unknown Type %#x.\n", static_cast<uint32_t>(DumpType));
+      printf("Unknown Type %#x.\n", uint32_t(DumpType));
       return false;
     }
 

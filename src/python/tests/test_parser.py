@@ -1,7 +1,7 @@
 #
 # This file is part of kdmp-parser project
 #
-# Released under MIT License, by 0vercl0k - 2020-2023
+# Released under MIT License, by 0vercl0k - 2023
 #
 # With contributions from:
 # * masthoon - (github.com/masthoon)
@@ -10,34 +10,18 @@
 
 import pathlib
 import unittest
-import zipfile
-import pytest
 
 import kdmp_parser
 
 REPO_ROOT = pathlib.Path(__file__).absolute().parent.parent.parent.parent
-# Cloned from https://github.com/0vercl0k/kdmp-parser-testdatas
-TEST_DATA_DIR = REPO_ROOT / "kdmp-parser-testdatas"
-assert TEST_DATA_DIR.exists()
-TEST_DATA_ZIPFILE = TEST_DATA_DIR / f"testdatas.zip"
-assert TEST_DATA_ZIPFILE.exists()
-
 
 class TestParserBasic(unittest.TestCase):
     def setUp(self):
-        self.formats = ("bmp", "full")
-        self.minidump_files: list[pathlib.Path] = []
+        self.minidump_files: list[pathlib.Path] = [
+            REPO_ROOT / "bmp.dmp",
+            REPO_ROOT / "full.dmp",
+        ]
 
-        minidump_zip = TEST_DATA_ZIPFILE
-        assert minidump_zip.exists()
-
-        for format in self.formats:
-            minidump_file = TEST_DATA_DIR / f"{format}.dmp"
-            if not minidump_file.exists():
-                with zipfile.ZipFile(minidump_zip) as f:
-                    f.extract(f"{format}.dmp", path=TEST_DATA_DIR)
-                assert minidump_file.exists()
-            self.minidump_files.append(minidump_file)
         return super().setUp()
 
     def tearDown(self) -> None:
@@ -124,3 +108,23 @@ class TestParserBasic(unittest.TestCase):
         assert parser.read_virtual_page(
             0xFFFFF80513370000
         ) == parser.read_physical_page(0x000000003D555000)
+
+    def test_parser_page_iterator(self):
+        parser = kdmp_parser.KernelDumpParser(self.minidump_files[0])
+
+        page_addresses = list(parser.pages.keys())
+        page_values = list(parser.pages.values())
+
+        assert len(parser.pages) > 0
+        assert len(page_addresses) == len(parser.pages)
+        assert len(page_addresses) == len(page_values)
+
+        addr = page_addresses[0]
+        page = parser.pages[addr]
+        assert parser.read_physical_page(addr) == page
+
+        for addr, page in parser.pages.items():
+            assert addr in page_addresses
+            assert page in page_values
+            assert len(page) == kdmp_parser.page.size
+            assert parser.read_physical_page(addr) == page

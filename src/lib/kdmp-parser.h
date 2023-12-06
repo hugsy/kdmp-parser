@@ -41,7 +41,7 @@ class KernelDumpParser {
   // File path to the crash-dump.
   //
 
-  std::filesystem::path PathFile_{};
+  std::filesystem::path PathFile_;
 
   //
   // Mapping between physical addresses / page data.
@@ -61,6 +61,10 @@ public:
     //
 
     PathFile_ = std::filesystem::path(PathFile);
+    if (!std::filesystem::exists(PathFile_)) {
+      printf("Invalid file: %s.\n", (char *)PathFile_.string().c_str());
+      return false;
+    }
 
     //
     // Map a view of the file.
@@ -149,6 +153,12 @@ public:
              DmpHdr_->BugCheckCodeParameters[2],
              DmpHdr_->BugCheckCodeParameters[3]}};
   }
+
+  //
+  // Get the path of dump.
+  //
+
+  std::filesystem::path const &GetDumpPath() const { return PathFile_; }
 
   //
   // Get the type of dump.
@@ -653,7 +663,7 @@ private:
   bool MapFile() { return FileMap_.MapFile(PathFile_.string().c_str()); }
 };
 
-struct Version {
+struct Version_t {
   static inline const uint16_t Major = KDMPPARSER_VERSION_MAJOR;
   static inline const uint16_t Minor = KDMPPARSER_VERSION_MINOR;
   static inline const uint16_t Patch = KDMPPARSER_VERSION_PATCH;
