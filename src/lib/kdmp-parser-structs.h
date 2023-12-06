@@ -96,6 +96,7 @@ const std::string_view DumpTypeToString(DumpType_t type) {
   case DumpType_t::CompleteMemoryDump:
     return "CompleteMemoryDump"sv;
   }
+  return ""sv;
 }
 
 template <typename Field_t>

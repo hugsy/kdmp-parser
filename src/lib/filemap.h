@@ -1,5 +1,6 @@
 // Axel '0vercl0k' Souchet - April 28 2020
 #include "platform.h"
+#include <cstdint>
 #include <cstdio>
 
 #if defined(WINDOWS)
