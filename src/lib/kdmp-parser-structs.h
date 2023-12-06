@@ -315,14 +315,19 @@ struct KERNEL_RDMP_HEADER64 : public RDMP_HEADER64 {
   std::array<uint8_t, 1> Bitmap;
 };
 
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#endif //__GNUC__
+
 static_assert(sizeof(KERNEL_RDMP_HEADER64) == 0x30 + 1,
               "Invalid size for KERNEL_RDMP_HEADER64");
 
 static_assert(offsetof(KERNEL_RDMP_HEADER64, Bitmap) == 0x30,
               "Invalid offset for KERNEL_RDMP_HEADER64");
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif //__GNUC__
 
 struct FULL_RDMP_HEADER64 : RDMP_HEADER64 {
   uint32_t NumberOfRanges;
@@ -332,14 +337,18 @@ struct FULL_RDMP_HEADER64 : RDMP_HEADER64 {
   std::array<uint8_t, 1> Bitmap;
 };
 
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#endif //__GNUC__
 static_assert(sizeof(FULL_RDMP_HEADER64) == 0x30 + 1,
               "Invalid size for FULL_RDMP_HEADER64");
 
 static_assert(offsetof(FULL_RDMP_HEADER64, Bitmap) == 0x30,
               "Invalid offset for FULL_RDMP_HEADER64");
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif //__GNUC__
 
 struct CONTEXT {
 
@@ -852,8 +861,10 @@ struct HEADER64 {
 // layout, so hopefully they prevent any regressions regarding the layout.
 //
 
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#endif //__GNUC__
 static_assert(offsetof(HEADER64, Signature) == 0x00,
               "The offset of KdDebuggerDataBlock looks wrong.");
 
@@ -874,7 +885,9 @@ static_assert(offsetof(HEADER64, Comment) == 0xfb0,
 
 static_assert(offsetof(HEADER64, u3.BmpHeader) == 0x2000,
               "The offset of BmpHeaders looks wrong.");
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif //__GNUC__
 
 namespace Page {
 
