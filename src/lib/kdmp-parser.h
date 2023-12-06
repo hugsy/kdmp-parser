@@ -580,7 +580,7 @@ private:
     uint64_t MetadataSize = 0;
     uint8_t *Bitmap = nullptr;
 
-    const uint64_t FileSize = FileMap_.FileSize();
+    const uint64_t FileSize = FileMap_.ViewSize();
     const uint64_t MaxAddress = ((uint64_t)DmpHdr_) + FileSize;
 
     switch (Type) {
@@ -598,6 +598,9 @@ private:
       MetadataSize = DmpHdr_->u3.FullRdmpHeader.MetadataSize;
       Bitmap = DmpHdr_->u3.FullRdmpHeader.Bitmap.data();
       break;
+
+    default:
+      return false;
     }
 
     if (!FirstPageOffset || !Page || !MetadataSize || !Bitmap)

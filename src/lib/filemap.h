@@ -177,7 +177,7 @@ public:
     return Success;
   }
 
-  uint64_t FileSize() const { return FileSize_.QuadPart; }
+  uint64_t ViewSize() const { return FileSize_.QuadPart; }
 };
 
 #elif defined(LINUX)
@@ -236,6 +236,8 @@ public:
 
     return true;
   }
+
+  uint64_t ViewSize() const { return ViewSize_; }
 };
 
 #endif
