@@ -270,9 +270,9 @@ static_assert(offsetof(BMP_HEADER64, FirstPage) == 0x20,
               "First page offset looks wrong.");
 
 struct RDMP_HEADER64 {
-  static constexpr uint32_t ExpectedMarker = 0x40;
-  static constexpr uint32_t ExpectedSignature = 0x504d4452; // 'PMDR'
-  static constexpr uint32_t ExpectedValidDump = 0x504D5544; // 'PMUD'
+  static const inline uint32_t ExpectedMarker = 0x40;
+  static const inline uint32_t ExpectedSignature = 0x504d4452; // 'PMDR'
+  static const inline uint32_t ExpectedValidDump = 0x504D5544; // 'PMUD'
 
   uint32_t Marker;
   uint32_t Signature;
@@ -677,8 +677,8 @@ union DUMP_FILE_ATTRIBUTES {
 ///
 ///
 struct HEADER64 {
-  static const uint32_t ExpectedSignature = 0x45474150; // 'EGAP'
-  static const uint32_t ExpectedValidDump = 0x34365544; // '46UD'
+  static const inline uint32_t ExpectedSignature = 0x45474150; // 'EGAP'
+  static const inline uint32_t ExpectedValidDump = 0x34365544; // '46UD'
 
   /* 0x0000 */ uint32_t Signature;
   /* 0x0004 */ uint32_t ValidDump;
