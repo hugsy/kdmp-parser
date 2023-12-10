@@ -65,6 +65,8 @@ public:
 
   constexpr void *ViewBase() const { return ViewBase_; }
 
+  LARGE_INTEGER const &FileSize() const { return FileSize_; }
+
   bool MapFile(const char *PathFile) {
     bool Success = true;
     HANDLE File = nullptr;
