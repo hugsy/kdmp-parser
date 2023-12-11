@@ -406,6 +406,12 @@ public:
     return GetPhysicalPage(*PhysicalAddress);
   }
 
+  const HEADER64 *GetDumpHeader() const {
+    if (!DmpHdr_)
+      throw std::runtime_error("DmpHdr_ should never be null here");
+    return DmpHdr_;
+  }
+
 private:
   //
   // Utility function to read an uint64_t from a physical address.
