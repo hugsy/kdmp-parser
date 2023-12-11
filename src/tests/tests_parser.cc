@@ -232,7 +232,7 @@ TEST_CASE("kdmp-parser", "parser") {
       const uint64_t AddressOffset = Address & 0xfff;
       const auto &ExpectedContent = TestCase.Bytes;
       const uint8_t *Page = Dmp.GetPhysicalPage(AddressAligned);
-      CHECK(Page != nullptr);
+      REQUIRE(Page != nullptr);
       CHECK(memcmp(Page + AddressOffset, ExpectedContent.data(),
                    sizeof(ExpectedContent)) == 0);
     }
