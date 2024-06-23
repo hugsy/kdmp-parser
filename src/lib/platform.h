@@ -16,11 +16,11 @@
 #define SYSTEM_PLATFORM "Windows"
 
 #include <windows.h>
-#if defined ARCH_X86
+#if defined(ARCH_X86)
 #define WINDOWS_X86
-#elif defined ARCH_X64
+#elif defined(ARCH_X64)
 #define WINDOWS_X64
-#elif defined ARCH_ARM64
+#elif defined(ARCH_ARM64)
 #define WINDOWS_ARM64
 #endif
 
@@ -31,7 +31,7 @@
 #if defined(linux) || defined(__linux)
 #define SYSTEM_PLATFORM "Linux"
 
-#if defined ARCH_X86
+#if defined(ARCH_X86)
 #define LINUX_X86
 #elif defined(ARCH_X64)
 #define LINUX_X64
@@ -42,10 +42,12 @@
 #elif defined(__APPLE__)
 
 #define SYSTEM_PLATFORM "OSX"
-#if defined ARCH_X86
+#if defined(ARCH_X86)
 #define OSX_X86
 #elif defined(ARCH_X64)
 #define OSX_X64
+#elif defined(ARCH_ARM64)
+#define OSX_ARM64
 #endif
 #else
 #error An error occured
