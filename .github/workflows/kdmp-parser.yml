@@ -176,8 +176,7 @@ jobs:
     - name: Python Binding Tests
       run: |
         pip install --upgrade pip setuptools wheel
-        pip install -U -r src/python/tests/requirements.txt
-        pip install -U --user src/python
+        pip install -U --user src/python'[tests]'
         pytest -vvv src/python/tests
 
     - name: Upload wheel
