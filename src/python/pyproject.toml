@@ -23,6 +23,9 @@ classifiers = [
 ]
 dependencies = []
 
+[project.optional-dependencies]
+tests = ["setuptools", "wheel", "nanobind", "black"]
+
 [project.urls]
 Homepage = "https://github.com/0vercl0k/kdmp-parser"
 
